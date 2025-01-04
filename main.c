@@ -84,9 +84,9 @@ return 1;
 			 
 SET_BIT(RCC->CR, RCC_CR_CSSON); //Включим CSS 
 MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_CFGR_SW_HSE);
-MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_CFGR_HPRE_DIV1); //AHB Prescaler /1/ НА AHB ТАКАЯ ЖЕ ЧАСТОТА КАК НА ЯДРЕ
-MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_CFGR_PPRE1_DIV2); //APB1 Prescaler /2, т.к. PCLK1 max 50MHz
-MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, RCC_CFGR_PPRE2_DIV1); //APB2 Prescaler /1. Тут нас ничего не ограничивает. 100MHz max 
+MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_CFGR_HPRE_DIV1); //AHB Prescaler /1/ НА AHB ТАКАЯ ЖЕ ЧАСТОТА КАК НА ЯДРЕ = 8 MHz
+MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_CFGR_PPRE1_DIV2); //APB1 Prescaler /2  = 4 MHz
+MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, RCC_CFGR_PPRE2_DIV1); //APB2 Prescaler /1 
 MODIFY_REG(FLASH->ACR, FLASH_ACR_LATENCY, FLASH_ACR_LATENCY_2WS);   //ВАЖНО! These bits represent the ratio of the CPU clock period to the Flash memory access time. 2wS = 2 wait states
 	
 RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOCEN | RCC_APB1ENR_WWDGEN;
@@ -123,7 +123,8 @@ void delay_Ms(int mS)  //милисек
  
   void WWDG_Init(void)
   {
-    WWDG->CFR |= WWDG_CFR_WDGTB0 | WWDG_CFR_WDGTB1 | 100;  //верхняя граница окна , то значение, достигнув которого , можно обновлять сторожевой таймер, чтобы он начинал                                                     //считать сначала сверху вниз. так, как один тик таймера будет равен 1/(8МГц/4096/8)=0,00409 c = 4 мс.
+    WWDG->CFR |= WWDG_CFR_WDGTB0 | WWDG_CFR_WDGTB1 | 100;    //делитель частоты = 8, WGTB = 11 , Итого: 8 MHz/4096/8 = 244Hz
+	  						     //верхняя граница окна , то значение, достигнув которого , можно обновлять сторожевой таймер, чтобы он начинал                                                     //считать сначала сверху вниз. так, как один тик таймера будет равен 1/(8МГц/4096/8)=0,00409 c = 4 мс.
                                                             //то время с начала таймера до возможности начать обновление = (127-100)*4мс = 108мс
     WWDG->CR |= WWDG_CR_WDGA | 127;                         //нижняя граница ,до которой возможно обновление - это 63,по времени от старта -это (127-63)*0,004096 = 262 мс
     
